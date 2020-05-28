@@ -30,7 +30,7 @@
 .selected:after {
   content: "\2713";
   position: absolute;
-  left: 14px;
+  left: 64px;
   font-size: 22px;
   color: black;
   margin-top: -2px;

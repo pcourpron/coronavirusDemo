@@ -139,6 +139,19 @@ function Dashboard(props) {
           ) : (
             <div>
               <div>
+                <button
+                  className="signout"
+                  onClick={() => {
+                    firebase.auth().signOut();
+                  }}
+                >
+                  Sign Out
+                </button>
+              </div>
+
+              <h1 style={{ textAlign: "center" }}>COVID 19 Stats - USA</h1>
+              <div style={{ paddingLeft: "50px" }}>
+                {" "}
                 <h3 className="datasetHeader">Pick a dataset</h3>
                 <button
                   className={
@@ -162,20 +175,51 @@ function Dashboard(props) {
                 >
                   Total Deaths
                 </button>
-                <button
-                  className="signout"
-                  onClick={() => {
-                    firebase.auth().signOut();
-                  }}
-                >
-                  Sign Out
-                </button>
+              </div>
+              <div style={{ paddingLeft: "60px" }}>
+                <h3> Pick a state to see the data</h3>
+                <svg width="500" height="50" style={{ marginLeft: "20px" }}>
+                  {dataType == "positive"
+                    ? domainPos.map((element, index) => {
+                        return (
+                          <g>
+                            <rect
+                              width="50"
+                              height="20"
+                              x={index * 50 + 20 + "px"}
+                              style={{ fill: colorScalePositive(element) }}
+                            ></rect>
+                            <text y="50px" x={index * 50 + 10 + "px"}>
+                              {element / 1000}k
+                            </text>
+                          </g>
+                        );
+                      })
+                    : domainDeath.map((element, index) => {
+                        return (
+                          <g>
+                            <rect
+                              width="50"
+                              height="20"
+                              x={index * 50 + 20 + "px"}
+                              style={{ fill: colorScaleDeath(element) }}
+                            ></rect>
+                            <text y="50px" x={index * 50 + 10 + "px"}>
+                              {element / 1000}k
+                            </text>
+                          </g>
+                        );
+                      })}
+                </svg>
               </div>
               <div className="dashboard">
                 <div>
-                  <h3> Pick a state to see the data</h3>
-                  <svg id="map-container" viewBox="0 0 975 610">
-                    {loading ? null : (
+                  <svg
+                    id="map-container"
+                    viewBox="0 0 975 610"
+                    style={{ margintop: "-30px" }}
+                  >
+                    {us.length == 0 ? null : (
                       <g
                         fill="none"
                         stroke="#000"
@@ -347,13 +391,17 @@ let stateConversion = {
   "50": "DC",
 };
 
+var domainPos = [0, 10000, 30000, 40000, 50000, 60000, 70000, 80000];
+
 var colorScalePositive = d3
   .scaleThreshold()
-  .domain([0, 10000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 1000000])
+  .domain(domainPos)
   .range(d3.schemeReds[9]);
+
+var domainDeath = [0, 200, 500, 1000, 2000, 3000, 4000, 10000];
 var colorScaleDeath = d3
   .scaleThreshold()
-  .domain([0, 200, 500, 1000, 2000, 3000, 4000, 10000])
+  .domain(domainDeath)
   .range(d3.schemeReds[9]);
 
 const Wrapper = styled.div`

@@ -95,7 +95,7 @@ function BarChart({ width, height, data, title, type }) {
           "translate(" + width / 2 + " ," + (height + margin.top + 20) + ")"
         )
         .style("text-anchor", "middle")
-        .text("Date since first case");
+        .text("Days since first case");
 
       // text label for the y axis
       let yAxisLabel =
