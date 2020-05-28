@@ -19,6 +19,61 @@
   stroke-width: 3px;
   stroke: black;
 }
-h3 {
+.dashboard h3 {
   text-align: center;
+}
+
+.selected {
+  color: black;
+  width: 300px;
+}
+.selected:after {
+  content: "\2713";
+  position: absolute;
+  left: 14px;
+  font-size: 22px;
+  color: black;
+  margin-top: -2px;
+}
+.button:nth-child(2) {
+  width: 192px !important;
+}
+
+.button {
+  outline: none;
+  cursor: pointer;
+  display: block;
+  border: 0 !important;
+  display: flex;
+  font-size: 15px;
+  align-items: center;
+  width: 140px;
+  justify-content: space-evenly;
+}
+
+.button:before {
+  content: "";
+  border: 1px solid grey;
+  height: 12px;
+  width: 12px;
+  display: block;
+  left: 0;
+}
+
+.datasetHeader {
+  padding-left: 15px;
+}
+.signout {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  background: orange;
+  outline: none;
+  border: 0px;
+  padding: 10px 20px;
+  font-size: 14px;
+  border-radius: 10px;
+  color: white;
+  box-shadow: 0 0 10px 1px lightgrey;
+  cursor: pointer;
 }

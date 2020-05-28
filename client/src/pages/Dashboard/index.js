@@ -8,9 +8,14 @@ import * as d3 from "d3";
 import * as topojson from "topojson";
 import "./dashboard.css";
 import BarChart from "../../charts/barChart";
+import { DualRing } from "react-awesome-spinners";
+import styled from "styled-components";
+import { TransitionGroup, CSSTransition } from "react-transition-group";
 
-function Dashboard() {
+function Dashboard(props) {
+  let { location } = props;
   let history = useHistory();
+  let [loading, setLoading] = useState(true);
   let [statesData, setStatesData] = useState();
   let [us, setUS] = useState([]);
   let geoPath = d3.geoPath();
@@ -56,6 +61,7 @@ function Dashboard() {
       statesData[element] = stateData;
     });
     setStatesDaily(statesData);
+    setLoading(false);
   }
 
   function setGraphData(id = stateSelected) {
@@ -107,75 +113,109 @@ function Dashboard() {
     return statePaths;
   }
   return (
-    <div>
-      <div>
-        <button
-          onClick={() => {
-            firebase.auth().signOut();
-          }}
+    <Wrapper>
+      <TransitionGroup>
+        <CSSTransition
+          key={location.key}
+          classNames="fade"
+          timeout={{ enter: 300, exit: 300 }}
         >
-          Sign Out
-        </button>
-      </div>
-      <div className="dashboard">
-        <div>
-          <h3> Pick a state to see the data</h3>
-          <svg id="map-container" viewBox="0 0 975 610">
-            {us.type && statesData ? (
-              <g
-                fill="none"
-                stroke="#000"
-                stroke-linejoin="round"
-                stroke-linecap="round"
-              >
-                {generateStatePaths(geoPath, us.objects.states).map(
-                  (element) => {
-                    return element;
+          {loading ? (
+            <div
+              style={{
+                position: "fixed",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%,-50%)",
+                height: "104px",
+                width: "104px",
+              }}
+            >
+              <DualRing size={104} sizeUnit={"px"} />
+              <p style={{ whiteSpace: "nowrap", marginTop: "80px" }}>
+                Collecting Data...
+              </p>
+            </div>
+          ) : (
+            <div>
+              <div>
+                <h3 className="datasetHeader">Pick a dataset</h3>
+                <button
+                  className={
+                    dataType == "positive" ? "selected button" : "button"
                   }
-                )}
-                />
-                <path
-                  d={geoPath(topojson.feature(us, us.objects.nation))}
-                ></path>
-              </g>
-            ) : null}
-          </svg>
-        </div>
-        <div>
-          <div>
-            <button
-              onClick={() => {
-                setDataType("positive");
-                setDailyInfo(statesData, "positive");
-              }}
-            >
-              Total Positive Cases
-            </button>
-            <button
-              onClick={() => {
-                setDataType("death");
-                setDailyInfo(statesData, "death");
-              }}
-            >
-              Total Deaths
-            </button>
-          </div>
-          <BarChart
-            type={dataType}
-            width={500}
-            height={300}
-            data={
-              lineData.length > 0
-                ? lineData
-                : Array.from(Array(80).keys()).map((value) => {
-                    return { x: value, y: 0 };
-                  })
-            }
-            title={graphTitle}
-          />
-        </div>
-      </div>
-    </div>
+                  onClick={() => {
+                    setDataType("positive");
+                    setDailyInfo(statesData, "positive");
+                  }}
+                >
+                  Total Positive Cases
+                </button>
+                <button
+                  className={
+                    dataType !== "positive" ? "selected button" : "button"
+                  }
+                  onClick={() => {
+                    setDataType("death");
+                    setDailyInfo(statesData, "death");
+                  }}
+                >
+                  Total Deaths
+                </button>
+                <button
+                  className="signout"
+                  onClick={() => {
+                    firebase.auth().signOut();
+                  }}
+                >
+                  Sign Out
+                </button>
+              </div>
+              <div className="dashboard">
+                <div>
+                  <h3> Pick a state to see the data</h3>
+                  <svg id="map-container" viewBox="0 0 975 610">
+                    {loading ? null : (
+                      <g
+                        fill="none"
+                        stroke="#000"
+                        stroke-linejoin="round"
+                        stroke-linecap="round"
+                      >
+                        {generateStatePaths(geoPath, us.objects.states).map(
+                          (element) => {
+                            return element;
+                          }
+                        )}
+                        />
+                        <path
+                          d={geoPath(topojson.feature(us, us.objects.nation))}
+                        ></path>
+                      </g>
+                    )}
+                  </svg>
+                </div>
+                <div>
+                  <BarChart
+                    type={dataType}
+                    width={500}
+                    height={300}
+                    data={
+                      lineData.length > 0
+                        ? lineData
+                        : Array.from(Array(80).keys()).map((value) => {
+                            return { x: value, y: 0 };
+                          })
+                    }
+                    title={graphTitle}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </CSSTransition>
+      </TransitionGroup>
+    </Wrapper>
   );
 }
 
@@ -315,3 +355,21 @@ var colorScaleDeath = d3
   .scaleThreshold()
   .domain([0, 200, 500, 1000, 2000, 3000, 4000, 10000])
   .range(d3.schemeReds[9]);
+
+const Wrapper = styled.div`
+  .fade-enter {
+    opacity: 0.01;
+  }
+  .fade-enter.fade-enter-active {
+    opacity: 1;
+    transition: opacity 300ms ease-in;
+  }
+  .fade-exit {
+    opacity: 1;
+  }
+
+  .fade-exit.fade-exit-active {
+    opacity: 0.01;
+    transition: opacity 300ms ease-in;
+  }
+`;

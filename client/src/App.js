@@ -58,6 +58,9 @@ function App({ location }) {
               }}
             >
               <DualRing size={104} sizeUnit={"px"} />
+              <p style={{ whiteSpace: "nowrap", marginTop: "80px" }}>
+                Connecting...
+              </p>
             </div>
           ) : (
             <Switch location={location}>

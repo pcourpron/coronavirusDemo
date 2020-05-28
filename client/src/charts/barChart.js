@@ -114,15 +114,18 @@ function BarChart({ width, height, data, title, type }) {
     } else {
       let yAxisLabel =
         type == "positive"
-          ? "Total number of positive cases"
-          : "Total number of deaths";
+          ? `Total number of positive cases `
+          : `Total number of deaths`;
       svg.selectAll(".y.axis").transition().duration(1000).call(yAxis);
       svg.selectAll(".x.axis").transition().duration(1000).call(xAxis);
       svg.selectAll(".yaxis.label").text(yAxisLabel);
     }
 
     svg.select(".line").transition(t).attr("d", line(data));
-
+    let newTitle =
+      type == "positive"
+        ? `Total number of positive cases over time in ${title} `
+        : `Total number of deaths over time in ${title}`;
     svg.selectAll(".title").remove();
     svg
       .append("text")
@@ -131,7 +134,7 @@ function BarChart({ width, height, data, title, type }) {
       .attr("class", "title")
       .attr("text-anchor", "middle")
       .style("font-size", "16px")
-      .text(title);
+      .text(newTitle);
   };
 
   return (
