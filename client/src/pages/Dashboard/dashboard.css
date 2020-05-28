@@ -30,7 +30,7 @@
 .selected:after {
   content: "\2713";
   position: absolute;
-  left: 64px;
+  left: 56px;
   font-size: 22px;
   color: black;
   margin-top: -2px;
@@ -48,7 +48,6 @@
   font-size: 15px;
   align-items: center;
   width: 140px;
-  justify-content: space-evenly;
 }
 
 .button:before {
@@ -57,7 +56,7 @@
   height: 12px;
   width: 12px;
   display: block;
-  left: 0;
+  margin-right: 10px;
 }
 
 .datasetHeader {
@@ -76,4 +75,18 @@
   color: white;
   box-shadow: 0 0 10px 1px lightgrey;
   cursor: pointer;
+}
+@media screen and (max-width: 1200px) {
+  #map-container {
+    max-height: 300px;
+  }
+}
+
+@media screen and (max-width: 1050px) {
+  .dashboard {
+    flex-direction: column;
+  }
+  .chart {
+    margin: 50px 0;
+  }
 }

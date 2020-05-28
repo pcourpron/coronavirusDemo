@@ -3,7 +3,7 @@ import React, { useRef, useEffect } from "react";
 import "./lineChart.css";
 const margin = { top: 20, right: 20, bottom: 20, left: 50 };
 
-function BarChart({ width, height, data, title, type }) {
+function BarChart({ width, height, data, title, type, populationAdjust }) {
   let xMax = data.length;
   let yMax = Math.max(...data.map((point) => point.y));
   const ref = useRef();
@@ -98,10 +98,33 @@ function BarChart({ width, height, data, title, type }) {
         .text("Days since first case");
 
       // text label for the y axis
-      let yAxisLabel =
-        type == "positive"
-          ? "Total number of positive cases"
-          : "Total number of deaths";
+      let yAxisLabel;
+
+      switch (type) {
+        case "positive":
+          if (populationAdjust) {
+            yAxisLabel = `Total number of positive cases per million `;
+          } else {
+            yAxisLabel = `Total number of positive cases`;
+          }
+          break;
+        case "death":
+          if (populationAdjust) {
+            yAxisLabel = `Total number of deaths per Million`;
+          } else {
+            yAxisLabel = `"Total number of deaths"`;
+          }
+          break;
+        case "deathIncrease":
+          if (populationAdjust) {
+            yAxisLabel = `Total number of deaths per Million per day`;
+          } else {
+            yAxisLabel = `Total number of deaths per Day`;
+          }
+        default:
+          break;
+      }
+
       svg
         .append("text")
         .attr("transform", "rotate(-90)")
@@ -112,20 +135,63 @@ function BarChart({ width, height, data, title, type }) {
         .style("text-anchor", "middle")
         .text(yAxisLabel);
     } else {
-      let yAxisLabel =
-        type == "positive"
-          ? `Total number of positive cases `
-          : `Total number of deaths`;
+      let yAxisLabel;
+      switch (type) {
+        case "positive":
+          if (populationAdjust) {
+            yAxisLabel = `Total number of positive cases per million `;
+          } else {
+            yAxisLabel = `Total number of positive cases`;
+          }
+          break;
+        case "death":
+          if (populationAdjust) {
+            yAxisLabel = `Total number of deaths per Million`;
+          } else {
+            yAxisLabel = `"Total number of deaths"`;
+          }
+          break;
+        case "deathIncrease":
+          if (populationAdjust) {
+            yAxisLabel = `Total number of deaths per Million per day`;
+          } else {
+            yAxisLabel = `Total number of deaths per Day`;
+          }
+        default:
+          break;
+      }
       svg.selectAll(".y.axis").transition().duration(1000).call(yAxis);
       svg.selectAll(".x.axis").transition().duration(1000).call(xAxis);
       svg.selectAll(".yaxis.label").text(yAxisLabel);
     }
 
     svg.select(".line").transition(t).attr("d", line(data));
-    let newTitle =
-      type == "positive"
-        ? `Total number of positive cases over time in ${title} `
-        : `Total number of deaths over time in ${title}`;
+    let newTitle;
+    switch (type) {
+      case "positive":
+        if (populationAdjust) {
+          newTitle = `Total number of positive cases over time in ${title} per Million `;
+        } else {
+          newTitle = `Total number of positive cases over time in ${title} `;
+        }
+        break;
+      case "death":
+        if (populationAdjust) {
+          newTitle = `Total number of deaths over time in ${title} per Million`;
+        } else {
+          newTitle = `Total number of deaths over time in ${title}`;
+        }
+        break;
+      case "deathIncrease":
+        if (populationAdjust) {
+          newTitle = `Daily number of deaths in ${title} per Million`;
+        } else {
+          newTitle = `Daily number of deaths in ${title}`;
+        }
+      default:
+        break;
+    }
+
     svg.selectAll(".title").remove();
     svg
       .append("text")
