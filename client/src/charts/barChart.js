@@ -6,6 +6,7 @@ const margin = { top: 20, right: 20, bottom: 20, left: 50 };
 function BarChart({ width, height, data, title, type, populationAdjust }) {
   let xMax = data.length;
   let yMax = Math.max(...data.map((point) => point.y));
+  let yMin = Math.min(...data.map((point) => point.y));
   const ref = useRef();
   var t = d3.transition().duration(500).ease(d3.easeLinear);
   const xScale = d3
@@ -46,7 +47,7 @@ function BarChart({ width, height, data, title, type, populationAdjust }) {
     // 6. Y scale will use the randomly generate number
     var yScale = d3
       .scaleLinear()
-      .domain([0, yMax * 1.1]) // input
+      .domain([yMin * 1.1, yMax * 1.1]) // input
       .range([height, 0]); // output
     const yAxis = d3.axisLeft().scale(yScale).ticks().tickSize(-width);
 
