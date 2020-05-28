@@ -1,0 +1,24 @@
+.states:hover {
+  stroke: black;
+  opacity: 0.7;
+  cursor: pointer;
+  stroke-width: 3px;
+}
+#map-container {
+  height: 400px;
+}
+
+.dashboard {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.stateSelected {
+  opacity: 1;
+  stroke-width: 3px;
+  stroke: black;
+}
+h3 {
+  text-align: center;
+}

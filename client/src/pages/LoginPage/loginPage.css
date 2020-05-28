@@ -1,0 +1,60 @@
+.loginPage {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  position: fixed;
+  background-color: #dae1e7;
+}
+.loginModal {
+  height: 400px;
+  width: 300px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  position: absolute;
+  border-radius: 10px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  padding: 20px 10px;
+  box-shadow: 0 3px 10px 0 rgba(0, 0, 0, 0.2);
+}
+
+.loginModal h3 {
+  text-align: center;
+  margin: 10px 0 20px;
+}
+
+.loginChange {
+  color: blue;
+  cursor: pointer;
+}
+
+.loginChangeContainer {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translate(-50%, 0px);
+  width: fit-content;
+}
+
+.loginButton {
+  margin: 0 auto;
+  display: block;
+
+  background: none;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  background: #00909e;
+  padding: 7px 30px;
+  color: white;
+  cursor: pointer;
+}
+
+.loginError {
+  color: red;
+  margin-top: 10px;
+  text-align: center;
+}

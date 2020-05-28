@@ -1,0 +1,317 @@
+import React, { Component, useState, useEffect } from "react";
+import firebase from "../../firebase";
+import Fieldset from "../../components/fieldset";
+import { useHistory } from "react-router-dom";
+import * as _ from "lodash";
+import axios from "axios";
+import * as d3 from "d3";
+import * as topojson from "topojson";
+import "./dashboard.css";
+import BarChart from "../../charts/barChart";
+
+function Dashboard() {
+  let history = useHistory();
+  let [statesData, setStatesData] = useState();
+  let [us, setUS] = useState([]);
+  let geoPath = d3.geoPath();
+  var [statesDaily, setStatesDaily] = useState([]);
+  let [lineData, setLineData] = useState([]);
+  let [graphTitle, setGraphTitle] = useState("");
+  let [dataType, setDataType] = useState("positive");
+  let [stateSelected, changeState] = useState("CA");
+
+  useEffect(function () {
+    axios.get("https://d3js.org/us-10m.v1.json").then((res) => {
+      let us = res.data;
+      setUS(us);
+    });
+
+    axios.get("https://covidtracking.com/api/states/daily").then((res) => {
+      let { data } = res;
+
+      setStatesData(data);
+      setDailyInfo(data);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (Object.keys(statesDaily).length > 0) {
+      setGraphData();
+    }
+  }, [statesDaily]);
+
+  function setDailyInfo(data, dataType = "positive") {
+    let states = [...new Set(data.map((day) => day.state))];
+    let statesData = {};
+    states.forEach((element) => {
+      let filtered = data.filter((day) => day.state == element);
+
+      let stateData = filtered.map((day) => {
+        return {
+          date: d3.timeParse("%Y%m%d")(day.date),
+          y: day[dataType] || 0,
+        };
+      });
+
+      statesData[element] = stateData;
+    });
+    setStatesDaily(statesData);
+  }
+
+  function setGraphData(id = stateSelected) {
+    setGraphTitle(statesAbbrev[id]);
+    setLineData([...statesDaily[id]].reverse());
+  }
+  function generateStatePaths(geoPath, data) {
+    const generate = () => {
+      let states = _.map(data.geometries, (feature, i) => {
+        let path = geoPath(topojson.feature(us, feature));
+        let number = i;
+
+        if (i < 10) number = "0" + i;
+        let id = stateConversion[number];
+        let filtered = statesData.filter((day) => day.state == id);
+        let stateData = filtered.map((day) => {
+          return {
+            date: d3.timeParse("%Y%m%d")(day.date),
+            y: day[dataType] || 0,
+          };
+        });
+        let fill = "black";
+        if (stateData.length > 0) {
+          if (dataType == "positive") {
+            fill = colorScalePositive(stateData[0].y);
+          } else {
+            fill = colorScaleDeath(stateData[0].y);
+          }
+        }
+
+        return (
+          <State
+            path={path}
+            key={i}
+            id={id}
+            onMouseEnter={() => {
+              setGraphData(id);
+            }}
+            changeState={changeState}
+            stateSelected={stateSelected}
+            fill={fill}
+          />
+        );
+      });
+      return states;
+    };
+
+    let statePaths = generate();
+    return statePaths;
+  }
+  return (
+    <div>
+      <div>
+        <button
+          onClick={() => {
+            firebase.auth().signOut();
+          }}
+        >
+          Sign Out
+        </button>
+      </div>
+      <div className="dashboard">
+        <div>
+          <h3> Pick a state to see the data</h3>
+          <svg id="map-container" viewBox="0 0 975 610">
+            {us.type && statesData ? (
+              <g
+                fill="none"
+                stroke="#000"
+                stroke-linejoin="round"
+                stroke-linecap="round"
+              >
+                {generateStatePaths(geoPath, us.objects.states).map(
+                  (element) => {
+                    return element;
+                  }
+                )}
+                />
+                <path
+                  d={geoPath(topojson.feature(us, us.objects.nation))}
+                ></path>
+              </g>
+            ) : null}
+          </svg>
+        </div>
+        <div>
+          <div>
+            <button
+              onClick={() => {
+                setDataType("positive");
+                setDailyInfo(statesData, "positive");
+              }}
+            >
+              Total Positive Cases
+            </button>
+            <button
+              onClick={() => {
+                setDataType("death");
+                setDailyInfo(statesData, "death");
+              }}
+            >
+              Total Deaths
+            </button>
+          </div>
+          <BarChart
+            type={dataType}
+            width={500}
+            height={300}
+            data={
+              lineData.length > 0
+                ? lineData
+                : Array.from(Array(80).keys()).map((value) => {
+                    return { x: value, y: 0 };
+                  })
+            }
+            title={graphTitle}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default Dashboard;
+
+const State = (props) => {
+  return (
+    <path
+      onClick={props.onMouseEnter}
+      onMouseDown={() => {
+        props.changeState(props.id);
+      }}
+      id={props.id}
+      className={
+        props.stateSelected == props.id ? "states stateSelected" : "states"
+      }
+      d={props.path}
+      fill={props.fill}
+      stroke="#FFFFFF"
+      strokeWidth={0.25}
+    />
+  );
+};
+
+let statesAbbrev = {
+  AL: "Alabama",
+  AK: "Alaska",
+  AZ: "Arizona",
+  AR: "Arkansas",
+  CA: "California",
+  CO: "Colorado",
+  CT: "Connecticut",
+  DE: "Delaware",
+  FL: "Florida",
+  GA: "Georgia",
+  HI: "Hawaii",
+  ID: "Idaho",
+  IL: "Illinois",
+  IN: "Indiana",
+  IA: "Iowa",
+  KS: "Kansas",
+  KY: "Kentucky",
+  LA: "Louisiana",
+  ME: "Maine",
+  MD: "Maryland",
+  MA: "Massachusetts",
+  MI: "Michigan",
+  MN: "Minnesota",
+  MS: "Mississippi",
+  MO: "Missouri",
+  MT: "Montana",
+  NE: "Nebraska",
+  NV: "Nevada",
+  NH: "New Hampshire",
+  NJ: "New Jersey",
+  NM: "New Mexico",
+  NY: "New York",
+  NC: "North Carolina",
+  ND: "North Dakota",
+  OH: "Ohio",
+  OK: "Oklahoma",
+  OR: "Oregon",
+  PA: "Pennsylvania",
+  RI: "Rhode Island",
+  SC: "South Carolina",
+  SD: "South Dakota",
+  TN: "Tennessee",
+  TX: "Texas",
+  UT: "Utah",
+  VT: "Vermont",
+  VA: "Virginia",
+  WA: "Washington",
+  WV: "West Virginia",
+  WI: "Wisconsin",
+  WY: "Wyoming",
+};
+
+let stateConversion = {
+  "00": "AR",
+  "01": "CA",
+  "02": "IL",
+  "03": "KS",
+  "04": "MS",
+  "05": "OH",
+  "06": "TX",
+  "07": "AL",
+  "08": "IA",
+  "09": "LA",
+  "10": "MN",
+  "11": "MO",
+  "12": "NE",
+  "13": "AZ",
+  "14": "CO",
+  "15": "IN",
+  "16": "MI",
+  "17": "MT",
+  "18": "NY",
+  "19": "OR",
+  "20": "VA",
+  "21": "WY",
+  "22": "NC",
+  "23": "OK",
+  "24": "TN",
+  "25": "WI",
+  "26": "AK",
+  "27": "VT",
+  "28": "ND",
+  "29": "GA",
+  "30": "ME",
+  "31": "RE",
+  "32": "WV",
+  "33": "ID",
+  "34": "SD",
+  "35": "NM",
+  "36": "WA",
+  "37": "PA",
+  "38": "FL",
+  "39": "UT",
+  "40": "KY",
+  "41": "NH",
+  "42": "SC",
+  "43": "NV",
+  "44": "HI",
+  "45": "NJ",
+  "46": "CT",
+  "47": "MD",
+  "48": "MA",
+  "49": "DE",
+  "50": "DC",
+};
+
+var colorScalePositive = d3
+  .scaleThreshold()
+  .domain([0, 10000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 1000000])
+  .range(d3.schemeReds[9]);
+var colorScaleDeath = d3
+  .scaleThreshold()
+  .domain([0, 200, 500, 1000, 2000, 3000, 4000, 10000])
+  .range(d3.schemeReds[9]);
