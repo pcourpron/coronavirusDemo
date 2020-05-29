@@ -48,6 +48,7 @@
   font-size: 15px;
   align-items: center;
   width: 170px;
+  background-color: white;
 }
 
 .button:before {
