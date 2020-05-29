@@ -14,6 +14,7 @@ fieldset label {
   top: 50%;
   transform: translate(0, -50%);
   transition: 0.5s;
+  left: 10px;
 }
 fieldset input {
   outline: none;
